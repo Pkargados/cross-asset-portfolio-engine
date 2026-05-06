@@ -42,7 +42,7 @@ class Book:
     alpha_df      : pd.DataFrame (T×N) — alpha in E[r] units (FM-aligned)
     cov_dict      : OrderedDict        — {date: pd.DataFrame} LW Σ per reb date
     reb_dates     : list or DatetimeIndex — rebalancing schedule
-    gamma         : float              — risk-aversion (Chernov optimizer)
+    gamma         : float              — risk-aversion coefficient (quadratic objective)
     kappa         : float              — position inertia
     lambd         : float              — L1 transaction-cost penalty
     max_weight    : float              — per-asset position limit (abs value)
@@ -89,10 +89,10 @@ class Book:
 
     def run(self, returns_df: pd.DataFrame) -> dict:
         """
-        Weekly-rebalanced Chernov backtest with EWMA power-scaling vol targeting.
+        Weekly-rebalanced backtest with EWMA power-scaling vol targeting.
 
         Risk control layers (in order):
-          1. Chernov optimizer  — Ledoit-Wolf Σ for relative position sizing only.
+          1. Quadratic mean-variance optimizer — Ledoit-Wolf Σ for relative position sizing only.
           2. EWMA vol scaling   — rv_t = sqrt(ewma_var_t * 52), updated each period
                                   with the just-realized PnL (no look-ahead).
                                   scale_raw = (TARGET_VOL / rv_t)^2.0  (power scaling:
@@ -170,7 +170,7 @@ class Book:
             alpha_t = alpha_df.loc[date, assets]
             Sigma_t = cov_dict[date].loc[assets, assets]
 
-            # ── 1. Optimize (Chernov + Ledoit-Wolf Σ, unchanged) ─────────────
+            # ── 1. Optimize (quadratic MV + Ledoit-Wolf Σ, unchanged) ──────────
             x_t = chernov_weights(alpha_t, Sigma_t, x_prev, n,
                                   gamma, kappa, lambd, max_weight)
 

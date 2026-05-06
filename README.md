@@ -19,7 +19,7 @@ data → alpha → portfolio → risk → execution → evaluation
 |---|---|
 | `data` | Daily price/return CSV; loaded and log-transformed at the strategy entry point |
 | `alpha` | Signal modules (momentum, spread, reversal); pure functions; no optimizer dependency |
-| `portfolio` | Chernov L2 optimizer; Book abstraction; Allocator |
+| `portfolio` | Quadratic mean-variance optimizer with turnover regularization; Book abstraction; Allocator |
 | `risk` | Ledoit-Wolf covariance; EWMA realized-vol targeting; DCC-GJR GARCH regime detection |
 | `execution` | Rebalancing schedule; transaction-cost penalty; per-position limits |
 | `evaluation` | Backtest loop inside Book; PnL attribution; report generation |
@@ -68,8 +68,8 @@ result = book.run(returns_df)
 
 A Book owns its alpha, covariance, optimizer parameters, and vol-targeting configuration.
 It is **regime-unaware** — regime decisions are made by the Allocator, not inside the Book.
-Risk control runs in three layers: (1) Chernov optimizer using Ledoit-Wolf covariance for
-relative asset sizing; (2) EWMA power-scaling for portfolio-level vol targeting
+Risk control runs in three layers: (1) a quadratic mean-variance optimizer using Ledoit-Wolf
+covariance for relative asset sizing, with a penalty on deviations from previous positions; (2) EWMA power-scaling for portfolio-level vol targeting
 (`scale = (target_vol / rv)^2`, bounded to [0.2, 1.5]); (3) hard per-position clip at
 `max_weight` as a safety net.
 
@@ -101,7 +101,7 @@ engine/
   portfolio/
     book.py               Book — independent portfolio unit
     allocator.py          Allocator — combines Book PnL streams
-    optimizer.py          chernov_weights() — Chernov L2 optimizer
+    optimizer.py          chernov_weights() — quadratic mean-variance optimizer with turnover penalty (name retained)
   regime/
     regime_detection.py   compute_regime_signals() — DCC-GJR GARCH labels
     regime_mapping.py     get_book_actions() — regime → Book decisions

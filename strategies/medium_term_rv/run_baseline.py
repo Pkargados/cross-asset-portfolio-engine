@@ -15,7 +15,7 @@ Pipeline:
   6. Spread alpha    (rolling OLS + rolling ADF + rolling z-score, window=120)
   7. Risk-parity combination (3 alphas)
   8. Ledoit-Wolf covariance (rolling, window=60, weekly)
-  9. Chernov optimizer  x_t = (γΣ + κI)^-1 (α_t + κx_{t-1})
+  9. Quadratic MV optimizer  x_t = (γΣ + κI)^-1 (α_t + κx_{t-1})
  10. PnL computation (net of transaction costs)
  11. Standalone backtests per alpha
  12. generate_report()
@@ -112,7 +112,7 @@ def normalize_alpha(raw: pd.DataFrame) -> pd.DataFrame:
 
 
 def optimize_weights(alpha_t, Sigma_t, x_old, n, gamma, kappa, lambd, max_weight):
-    """Chernov closed-form L2 optimizer."""
+    """Quadratic mean-variance optimizer with turnover regularization."""
     alpha_t = np.asarray(alpha_t).reshape(-1, 1)
     x_old   = np.asarray(x_old).reshape(-1, 1)
     Sigma   = np.asarray(Sigma_t)
@@ -131,10 +131,10 @@ def run_backtest(alpha_df, cov_dict, returns_df,
                  ewma_halflife=EWMA_HALFLIFE,
                  scale_min=SCALE_MIN, scale_max=SCALE_MAX):
     """
-    Weekly-rebalanced Chernov backtest with EWMA power-scaling vol targeting.
+    Weekly-rebalanced backtest with EWMA power-scaling vol targeting.
 
     Risk control layers (in order):
-      1. Chernov optimizer  — Ledoit-Wolf Σ for relative position sizing only.
+      1. Quadratic mean-variance optimizer — Ledoit-Wolf Σ for relative position sizing only.
       2. EWMA vol scaling   — rv_t = sqrt(ewma_var_t * 52), updated each period
                               with the just-realized PnL (no look-ahead).
                               scale_raw = (TARGET_VOL / rv_t)^2.0  (power scaling:
@@ -199,7 +199,7 @@ def run_backtest(alpha_df, cov_dict, returns_df,
         alpha_t = alpha_df.loc[date, assets]
         Sigma_t = cov_dict[date].loc[assets, assets]
 
-        # ── 1. Optimize (Chernov + Ledoit-Wolf Σ, unchanged) ─────────────────
+        # ── 1. Optimize (quadratic MV + Ledoit-Wolf Σ, unchanged) ───────────
         x_t = chernov_weights(alpha_t, Sigma_t, x_prev, n,
                               gamma, kappa, lambd, max_weight)
 
