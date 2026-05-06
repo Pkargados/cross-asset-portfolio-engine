@@ -1,0 +1,113 @@
+{
+  "metadata": {
+    "phase": "Phase2b",
+    "description": "Phase 2b \u2014 Realized-vol targeting replaces model-based vol targeting. Root cause: LW on residual returns (T/N~4.6) shrinks toward identity; dollar-neutral portfolio nearly cancels under identity \u03a3 \u2192 model vol <<< realized vol \u2192 scale>>1 always \u2192 positions saturate at MAX_WEIGHT every period. Fix: scale=min(1, TARGET_VOL/rv_t) where rv_t=std(pnl[-8w])*sqrt(52). One-sided (only reduces positions); LW \u03a3 retained in optimizer for relative sizing. Medium-term book: Momentum + Spread only (reversal excluded, horizon mismatch). 2.2a ECM filter: rolling 120d; discard if rho>=0 or half-life>=30d. 2.2b Both pair legs signalled. 2.1 Rolling Sharpe combination (Mom+Spread): 52w, nu=0.3, hl=4w EWM. Covariance: Ledoit-Wolf on residual_ret (beta-neutralized). 2.3 DCC-GARCH regime conditioning: applied. DCC fit once on full sample; R_t recursively filtered (Option A). alpha_scale in [0.1,1.0]: spike_t*0.5 + rho_z taper.",
+    "generated_at": "2026-03-29T20:11:48.139021Z"
+  },
+  "performance": {
+    "total_return": 0.691518,
+    "annualized_return": 0.06291,
+    "annualized_volatility": 0.281632,
+    "sharpe_ratio": 0.2234,
+    "calmar_ratio": 0.5781,
+    "max_drawdown": -0.1088,
+    "n_periods": 448,
+    "start_date": "2017-01-13",
+    "end_date": "2025-11-14"
+  },
+  "signal_quality": {
+    "Rev": {
+      "mean_ic": 0.012332,
+      "ic_std": 0.382116,
+      "ic_tstat": 0.502,
+      "ic_count": 242
+    },
+    "Mom": {
+      "mean_ic": -0.021201,
+      "ic_std": 0.433278,
+      "ic_tstat": -0.4616,
+      "ic_count": 89
+    },
+    "Spread": {
+      "mean_ic": 0.021365,
+      "ic_std": 0.367233,
+      "ic_tstat": 0.8289,
+      "ic_count": 203
+    }
+  },
+  "stability": {
+    "avg_rolling_sharpe": -0.4183,
+    "pct_positive_periods": 0.4621,
+    "avg_turnover": 0.106269,
+    "rolling_sharpe_window": 60
+  },
+  "attribution": {
+    "Rev": {
+      "sharpe_ratio": -0.58,
+      "total_return": -0.72459,
+      "annualized_return": -0.139011,
+      "max_drawdown": -0.7369,
+      "sharpe": -0.3811,
+      "max_dd": -0.7369
+    },
+    "Mom": {
+      "sharpe_ratio": 0.258,
+      "total_return": 0.828029,
+      "annualized_return": 0.072528,
+      "max_drawdown": -0.0756,
+      "sharpe": 0.3421,
+      "max_dd": -0.0756
+    },
+    "Spread": {
+      "sharpe_ratio": 0.2827,
+      "total_return": 0.935777,
+      "annualized_return": 0.079682,
+      "max_drawdown": -0.1176,
+      "sharpe": 0.3656,
+      "max_dd": -0.1176
+    }
+  },
+  "diagnostics": {
+    "gross_exposure": {
+      "mean": 0.286375,
+      "median": 0.302554,
+      "max": 0.373846
+    },
+    "spread_stats": {
+      "mean": -0.002789,
+      "std": 0.945688,
+      "min": -2.029227,
+      "max": 2.207715,
+      "n_nonzero": 2769,
+      "pct_nonzero": 0.46
+    },
+    "ic": {
+      "Rev": {
+        "mean_ic": 0.012332,
+        "ic_std": 0.382116
+      },
+      "Mom": {
+        "mean_ic": -0.021201,
+        "ic_std": 0.433278
+      },
+      "Spread": {
+        "mean_ic": 0.021365,
+        "ic_std": 0.367233
+      }
+    }
+  },
+  "regime": {
+    "dcc_converged": true,
+    "rho_mean": 0.207025,
+    "rho_std": 0.009831,
+    "disp_mean": 0.212642,
+    "n_spikes": 129,
+    "spike_pct": 0.048478,
+    "ewma_vol_mean": 0.539911,
+    "spread_stab_mean": 0.421562,
+    "scale_mean": 0.938547,
+    "scale_min": 0.15,
+    "n_periods_reduced": 70,
+    "pct_periods_reduced": 0.151188
+  }
+}
